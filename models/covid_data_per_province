@@ -1,0 +1,61 @@
+{{ config(materialized='table') }}
+
+WITH province_details
+     AS (SELECT province,
+                population,
+                Sum(total_deaths)       AS number_of_deaths_per_province,
+                Sum(total_active_cases) AS number_of_active_cases_per_province,
+                Sum(total_recovered)    AS
+                number_of_recovered_cases_per_province,
+                Sum(total_cases)        AS number_of_cases_per_province
+         FROM PLAYGROUND_RISHABH_SINGH_23.covid_19_indonesia_rishabh_singh
+    GROUP  BY province,
+              population) SELECT *
+FROM  (SELECT province,
+              population,
+              'DEATHS'                                                AS type,
+              ROUND(( number_of_deaths_per_province * 100000 ) / population) AS rate,
+              Dense_rank()
+                OVER (
+                  ORDER BY rate DESC)                                 AS
+              rank_on_rate
+       FROM   province_details)
+WHERE  rank_on_rate <= 5
+UNION ALL
+SELECT *
+FROM  (SELECT province,
+              population,
+              'ACTIVE_CASES'                                                AS
+              type,
+              ROUND(( number_of_active_cases_per_province * 100000 ) / population) AS
+              rate,
+              Dense_rank()
+                OVER (
+                  ORDER BY rate DESC)                                       AS
+                    rank_on_rate
+       FROM   province_details)
+WHERE  rank_on_rate <= 5
+UNION ALL
+SELECT *
+FROM  (SELECT province,
+              population,
+              'RECOVERED_CASES'                                       AS type,
+              ROUND(( number_of_recovered_cases_per_province*100000 ) / population) AS rate,
+              Dense_rank()
+                OVER (
+                  ORDER BY rate DESC)                                 AS
+              rank_on_rate
+       FROM   province_details)
+WHERE  rank_on_rate <= 5
+UNION ALL
+SELECT *
+FROM  (SELECT province,
+              population,
+              'TOTAL_CASES'                                          AS type,
+              ROUND(( number_of_cases_per_province * 100000 ) / population) AS rate,
+              Dense_rank()
+                OVER (
+                  ORDER BY rate DESC)                                AS
+              rank_on_rate
+       FROM   province_details)
+WHERE  rank_on_rate <= 5 
