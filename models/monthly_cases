@@ -1,0 +1,13 @@
+{{ config(materialized='table') }}
+
+
+select extract(year from cast(date as date)) as year,
+extract(month from cast(date as date)) as month,
+sum(TOTAL_CASES) as number_of_cases_per_month,
+sum(TOTAL_ACTIVE_CASES) as number_of_active_cases_per_month,
+sum(TOTAL_RECOVERED) as number_of_recovered_cases_per_month,
+sum(TOTAL_DEATHS) as number_of_deaths_per_month
+
+from PLAYGROUND_RISHABH_SINGH_23.COVID_19_INDONESIA_RISHABH_SINGH
+group by year, month
+order by year, month
