@@ -1,0 +1,4 @@
+
+	{{ config(materialized='table') }}
+
+	select distinct continent, country,island, province,location from PLAYGROUND_RISHABH_SINGH_23.COVID_19_INDONESIA_RISHABH_SINGH
