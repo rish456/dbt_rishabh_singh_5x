@@ -1,0 +1,61 @@
+
+{{ config(materialized='table') }}
+
+SELECT year,
+       month,
+       number_of_cases_per_month,
+       monthly_percent_growth_in_cases,
+       number_of_active_cases_per_month,
+       monthly_percent_growth_in_active_cases,
+       number_of_recovered_cases_per_month,
+       monthly_percent_growth_in_recovered_cases,
+       number_of_deaths_per_month,
+       monthly_percent_growth_in_deaths
+FROM   (SELECT year,
+               month,
+               number_of_cases_per_month,
+               Lag(number_of_cases_per_month, 1)
+                 OVER(
+                   partition BY year
+                   ORDER BY year, month)                      AS
+               last_month_cases,
+               Round(( ( ( number_of_cases_per_month - last_month_cases ) * 100
+                       ) /
+                       last_month_cases
+                     ), 2)                                    AS
+                      monthly_percent_growth_in_cases,
+               number_of_active_cases_per_month,
+               Lag(number_of_active_cases_per_month, 1)
+                 OVER(
+                   partition BY year
+                   ORDER BY year, month)                      AS
+                      last_month_active_cases,
+               Round(( ( ( number_of_active_cases_per_month
+                           - last_month_active_cases )
+                         * 100 )
+                       /
+                             last_month_active_cases ), 2)    AS
+               monthly_percent_growth_in_active_cases,
+               number_of_recovered_cases_per_month,
+               Lag(number_of_recovered_cases_per_month, 1)
+                 OVER(
+                   partition BY year
+                   ORDER BY year, month)                      AS
+                      last_month_recovered_cases,
+               Round(( ( ( number_of_recovered_cases_per_month
+                           - last_month_recovered_cases ) *
+                         100 )
+                       /
+                             last_month_recovered_cases ), 2) AS
+               monthly_percent_growth_in_recovered_cases,
+               number_of_deaths_per_month,
+               Lag(number_of_deaths_per_month, 1)
+                 OVER(
+                   partition BY year
+                   ORDER BY year, month)                      AS
+               last_month_deaths,
+               Round(( ( ( number_of_deaths_per_month - last_month_deaths ) *
+                         100 ) /
+                       last_month_deaths ), 2)                AS
+                      monthly_percent_growth_in_deaths
+        FROM   playground_rishabh_singh_23.monthly_cases) 
